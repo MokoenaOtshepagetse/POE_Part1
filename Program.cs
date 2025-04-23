@@ -50,6 +50,9 @@ class CyberSecurityChatBot
 
             if (input == "exit") break;
 
+            // Add the loading animation here
+            ShowLoadingAnimation();
+
             bool responseFound = false;
             foreach (var key in responses.Keys)
             {
