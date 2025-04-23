@@ -107,6 +107,27 @@ class CyberSecurityChatBot
         Console.ResetColor();
     }
 
+    private static void ShowLoadingAnimation()
+    {
+        Console.ForegroundColor = ConsoleColor.Magenta;
+        Console.Write("\nC-Sec Helper is thinking");
+
+        for (int i = 0; i < 3; i++) // Three sets of dots
+        {
+            for (int j = 0; j < 3; j++) // Three dots per set
+            {
+                Thread.Sleep(300); // 300ms between dots
+                Console.Write(".");
+                Console.Out.Flush(); // Force immediate display
+            }
+            Thread.Sleep(300);
+            Console.Write("\b\b\b   \b\b\b"); // Backspace to remove dots
+        }
+
+        Console.WriteLine("..."); // Final dots
+        Console.ResetColor();
+    }
+
     static void PrintResponse(string key, string question)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
