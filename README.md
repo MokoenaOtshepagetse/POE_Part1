@@ -1,6 +1,11 @@
 # C-Sec Helper: Cybersecurity Awareness Chatbot
 
-![ASCII Logo Preview](https://i.imgur.com/ABCD123.png) *Example of the ASCII header*
+  ____     ____              _   _      _                 
+ / ___|   / ___|  ___  ___  | | | | ___| |_ __   ___ _ __ 
+| |   ____\___ \ / _ \/ __| | |_| |/ _ \ | '_ \ / _ \ '__|
+| |__|_____|__) |  __/ (__  |  _  |  __/ | |_) |  __/ |   
+ \____|   |____/ \___|\___| |_| |_|\___|_| .__/ \___|_|   
+                                         |_|              
 
 A command-line chatbot designed to educate users about cybersecurity best practices through interactive conversations.
 
