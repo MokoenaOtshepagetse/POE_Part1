@@ -1,0 +1,38 @@
+{
+    "password": {
+        "responses": [
+            "Use a mix of letters, numbers, and symbols for strong passwords.",
+            "Change your passwords regularly to enhance security.",
+            "Avoid using easily guessable passwords like '123456' or 'password'."
+        ],
+        "follow_ups": [
+            "Do you want tips on how to create a strong password?",
+            "Would you like to know about password managers?",
+            "Are you interested in learning about two-factor authentication?"
+        ]
+    },
+    "phishing": {
+        "responses": [
+            "Be cautious of emails asking for personal information.",
+            "Check the sender's email address for authenticity.",
+            "Do not click on links in suspicious emails."
+        ],
+        "follow_ups": [
+            "Would you like to know how to identify phishing emails?",
+            "Do you want to learn about reporting phishing attempts?",
+            "Are you interested in tips for safe browsing?"
+        ]
+    },
+    "malware": {
+        "responses": [
+            "Keep your antivirus software updated to protect against malware.",
+            "Avoid downloading software from untrusted sources.",
+            "Regularly scan your system for malware."
+        ],
+        "follow_ups": [
+            "Do you want to know how to remove malware from your system?",
+            "Would you like tips on safe downloading practices?",
+            "Are you interested in learning about different types of malware?"
+        ]
+    }
+}

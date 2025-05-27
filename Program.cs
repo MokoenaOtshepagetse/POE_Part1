@@ -1,24 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Media;
+using System.Linq;
+using Newtonsoft.Json;
 using System.Threading;
 
 class CyberSecurityChatBot
 {
-    private static Dictionary<string, (string Title, string Response)> responses = new Dictionary<string, (string, string)>(StringComparer.OrdinalIgnoreCase)
+    private Dictionary<string, KeywordData> keywordResponses;
+    private List<string> generalResponses;
+
+    public CyberSecurityChatBot(string jsonFilePath)
     {
-        {"hello", ("Greeting", "Welcome to Cybersecurity Awareness! How can I help you today?")},
-        {"how are you", ("Status", "I'm a chatbot, so I don't have feelings, but I'm fully operational and ready to assist with cybersecurity matters!")},
-        {"purpose", ("Mission", "My purpose is to educate users about:\n- Password security\n- Phishing detection\n- Safe browsing practices\n- Device protection\n- Network security")},
-        {"password", ("Password Security", "🔑 Create strong passwords:\n- Minimum 12 characters\n- Mix letters, numbers & symbols\n- Avoid personal information\n- Use a password manager")},
-        {"phishing", ("Phishing Alert", "🚨 Watch for:\n- Urgent or threatening language\n- Misspellings in email addresses\n- Suspicious attachments\n- Requests for sensitive info\nWhen in doubt, verify directly!")},
-        {"browsing", ("Safe Browsing", "🌐 Safety tips:\n- Look for HTTPS in URLs\n- Use ad-blockers\n- Keep browsers updated\n- Avoid public WiFi for sensitive tasks\n- Use VPN for extra protection")},
-        {"malware", ("Malware Defense", "🛡️ Protection strategies:\n- Install reputable antivirus\n- Regular system updates\n- Don't open unknown attachments\n- Backup data regularly\n- Enable firewall protection")},
-        {"bye", ("Exit", "Stay secure! Always verify links and think before you click. Goodbye!")}
-    };
+        LoadKeywords(jsonFilePath);
+        LoadGeneralResponses();
+    }
 
     static void Main()
     {
+        var chatbot = new CyberSecurityChatBot("keywords.json"); // Load from the same directory
+
         try
         {
             using (var player = new SoundPlayer("welcome.wav"))
@@ -54,11 +56,11 @@ class CyberSecurityChatBot
             ShowLoadingAnimation();
 
             bool responseFound = false;
-            foreach (var key in responses.Keys)
+            foreach (var key in chatbot.keywordResponses.Keys)
             {
                 if (input.Contains(key))
                 {
-                    PrintResponse(key, input);
+                    PrintResponse(key, input, chatbot.keywordResponses[key]);
                     responseFound = true;
                     break;
                 }
@@ -66,12 +68,38 @@ class CyberSecurityChatBot
 
             if (!responseFound)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                Console.WriteLine("\n⚠️  I'm not sure about that. Try asking about:");
-                Console.WriteLine("• Passwords • Phishing • Safe browsing • Malware");
-                Console.ResetColor();
+                // Respond with a random general response
+                PrintGeneralResponse();
             }
         }
+    }
+
+    private void LoadKeywords(string jsonFilePath)
+    {
+        if (File.Exists(jsonFilePath))
+        {
+            var jsonData = File.ReadAllText(jsonFilePath);
+            keywordResponses = JsonConvert.DeserializeObject<Dictionary<string, KeywordData>>(jsonData);
+        }
+        else
+        {
+            keywordResponses = new Dictionary<string, KeywordData>();
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.WriteLine("⚠️  Keywords file not found.");
+            Console.ResetColor();
+        }
+    }
+
+    private void LoadGeneralResponses()
+    {
+        generalResponses = new List<string>
+        {
+            "Did you know that strong passwords can significantly reduce the risk of hacking?",
+            "Always be cautious when clicking on links in emails.",
+            "Cybersecurity is everyone's responsibility!",
+            "Regularly updating your software can help protect against vulnerabilities.",
+            "Two-factor authentication adds an extra layer of security."
+        };
     }
 
     static void ShowAsciiArt(string title, ConsoleColor color)
@@ -131,18 +159,33 @@ class CyberSecurityChatBot
         Console.ResetColor();
     }
 
-    static void PrintResponse(string key, string question)
+    static void PrintResponse(string key, string question, KeywordData keywordData)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"\n[{DateTime.Now:t}] You asked: {question}");
         Console.ResetColor();
 
-        var response = responses[key];
+        var response = keywordData.Responses[new Random().Next(keywordData.Responses.Count)];
         Console.ForegroundColor = ConsoleColor.Cyan;
-        Console.WriteLine($"\n🔒 {response.Title.ToUpper()}");
+        Console.WriteLine($"\n🔒 {key.ToUpper()}");
         Console.ForegroundColor = ConsoleColor.White;
-        Console.WriteLine($"\n{response.Response}\n");
+        Console.WriteLine($"\n{response}\n");
         Console.ResetColor();
         Console.WriteLine(new string('─', 50));
     }
+
+    private void PrintGeneralResponse()
+    {
+        var randomResponse = generalResponses[new Random().Next(generalResponses.Count)];
+        Console.ForegroundColor = ConsoleColor.Cyan;
+        Console.WriteLine($"\n🔒 {randomResponse}\n");
+        Console.ResetColor();
+        Console.WriteLine(new string('─', 50));
+    }
+}
+
+public class KeywordData
+{
+    public List<string> Responses { get; set; }
+    public List<string> FollowUps { get; set; }
 }
