@@ -5,21 +5,30 @@ using System.Media;
 using System.Linq;
 using Newtonsoft.Json;
 using System.Threading;
+&nbsp;
+&nbsp;
 
 class CyberSecurityChatBot
 {
     private Dictionary<string, KeywordData> keywordResponses;
     private List<string> generalResponses;
+    private string lastKeyword; // To track the last keyword discussed
+&nbsp;
+&nbsp;
 
     public CyberSecurityChatBot(string jsonFilePath)
     {
         LoadKeywords(jsonFilePath);
         LoadGeneralResponses();
     }
+&nbsp;
+&nbsp;
 
     static void Main()
     {
         var chatbot = new CyberSecurityChatBot("keywords.json"); // Load from the same directory
+        &nbsp;
+        &nbsp;
 
         try
         {
@@ -34,37 +43,52 @@ class CyberSecurityChatBot
             Console.WriteLine("\n⚠️  Could not play welcome sound: " + ex.Message);
             Console.ResetColor();
         }
+        &nbsp;
+        &nbsp;
 
         Console.Clear();
         ShowAsciiArt("CyberSec Helper", ConsoleColor.Cyan);
         Console.Write("\nEnter your name: ");
         string userName = Console.ReadLine().Trim();
         if (string.IsNullOrEmpty(userName)) userName = "Guest";
+        &nbsp;
+        &nbsp;
 
         ShowWelcomeMessage(userName);
         Thread.Sleep(1000);
+        &nbsp;
+        &nbsp;
 
         while (true)
         {
             PrintHeader("Chat Session", ConsoleColor.DarkYellow);
             Console.Write("\nAsk a question ('exit' to end): ");
             string input = Console.ReadLine().Trim().ToLower();
+            &nbsp;
+            &nbsp;
 
             if (input == "exit") break;
+            &nbsp;
+            &nbsp;
 
             // Add the loading animation here
             ShowLoadingAnimation();
+            &nbsp;
+            &nbsp;
 
             bool responseFound = false;
             foreach (var key in chatbot.keywordResponses.Keys)
             {
                 if (input.Contains(key))
                 {
+                    chatbot.lastKeyword = key; // Update the last keyword
                     PrintResponse(key, input, chatbot.keywordResponses[key]);
                     responseFound = true;
                     break;
                 }
             }
+            &nbsp;
+            &nbsp;
 
             if (!responseFound)
             {
@@ -73,6 +97,8 @@ class CyberSecurityChatBot
             }
         }
     }
+&nbsp;
+&nbsp;
 
     private void LoadKeywords(string jsonFilePath)
     {
@@ -89,6 +115,8 @@ class CyberSecurityChatBot
             Console.ResetColor();
         }
     }
+&nbsp;
+&nbsp;
 
     private void LoadGeneralResponses()
     {
@@ -101,6 +129,8 @@ class CyberSecurityChatBot
             "Two-factor authentication adds an extra layer of security."
         };
     }
+&nbsp;
+&nbsp;
 
     static void ShowAsciiArt(string title, ConsoleColor color)
     {
@@ -115,6 +145,8 @@ class CyberSecurityChatBot
 ");
         Console.ResetColor();
     }
+&nbsp;
+&nbsp;
 
     static void ShowWelcomeMessage(string name)
     {
@@ -128,6 +160,8 @@ class CyberSecurityChatBot
 ", name);
         Console.ResetColor();
     }
+&nbsp;
+&nbsp;
 
     static void PrintHeader(string text, ConsoleColor color)
     {
@@ -137,11 +171,15 @@ class CyberSecurityChatBot
         Console.WriteLine($"{new string('═', 50)}");
         Console.ResetColor();
     }
+&nbsp;
+&nbsp;
 
     private static void ShowLoadingAnimation()
     {
         Console.ForegroundColor = ConsoleColor.Magenta;
         Console.Write("\nC-Sec Helper is thinking");
+        &nbsp;
+        &nbsp;
 
         for (int i = 0; i < 3; i++) // Three sets of dots
         {
@@ -154,16 +192,22 @@ class CyberSecurityChatBot
             Thread.Sleep(300);
             Console.Write("\b\b\b   \b\b\b"); // Backspace to remove dots
         }
+        &nbsp;
+        &nbsp;
 
         Console.WriteLine("..."); // Final dots
         Console.ResetColor();
     }
+&nbsp;
+&nbsp;
 
     static void PrintResponse(string key, string question, KeywordData keywordData)
     {
         Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine($"\n[{DateTime.Now:t}] You asked: {question}");
         Console.ResetColor();
+        &nbsp;
+        &nbsp;
 
         var response = keywordData.Responses[new Random().Next(keywordData.Responses.Count)];
         Console.ForegroundColor = ConsoleColor.Cyan;
@@ -172,7 +216,27 @@ class CyberSecurityChatBot
         Console.WriteLine($"\n{response}\n");
         Console.ResetColor();
         Console.WriteLine(new string('─', 50));
+        &nbsp;
+        &nbsp;
+
+        // Provide a follow-up question if available
+        if (keywordData.FollowUps != null && keywordData.FollowUps.Count > 0)
+        {
+            var followUp = keywordData.FollowUps[new Random().Next(keywordData.FollowUps.Count)];
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"🤔 {followUp}");
+            Console.ResetColor();
+        }
+
+        if (!string.IsNullOrEmpty(userProfile.FavoriteTopic) && key.Equals(userProfile.FavoriteTopic.ToLower()))
+        {
+            Console.ForegroundColor = ConsoleColor.Cyan;
+            Console.WriteLine($"💡 Since you like {userProfile.FavoriteTopic}, remember to stay updated on the latest trends!");
+            Console.ResetColor();
+        }
     }
+&nbsp;
+&nbsp;
 
     private void PrintGeneralResponse()
     {
@@ -183,6 +247,8 @@ class CyberSecurityChatBot
         Console.WriteLine(new string('─', 50));
     }
 }
+&nbsp;
+&nbsp;
 
 public class KeywordData
 {
