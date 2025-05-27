@@ -17,6 +17,12 @@ class CyberSecurityChatBot
     // Constructor to initialize the chatbot with necessary data
     public CyberSecurityChatBot(string jsonFilePath, string userProfilePath)
     {
+        keywordResponses = new Dictionary<string, KeywordData>();
+        generalResponses = new List<string>();
+        userProfile = new UserProfile();
+        sentimentResponses = new Dictionary<string, List<string>>();
+        defaultResponses = new List<string>();
+
         LoadKeywords(jsonFilePath); // Load keyword responses from JSON file
         LoadGeneralResponses(); // Load general responses
         LoadUserProfile(userProfilePath); // Load user profile from JSON file
@@ -30,6 +36,7 @@ class CyberSecurityChatBot
         var chatbot = new CyberSecurityChatBot("keywords.json", "userProfile.json"); // Load from the same directory
 
         // Play welcome sound
+    #if WINDOWS
         try
         {
             using (var player = new SoundPlayer("welcome.wav"))
@@ -43,6 +50,7 @@ class CyberSecurityChatBot
             Console.WriteLine("\n⚠️  Could not play welcome sound: " + ex.Message);
             Console.ResetColor();
         }
+    #endif
 
         Console.Clear();
         ShowAsciiArt("CyberSec Helper", ConsoleColor.Cyan); // Display ASCII art
@@ -51,15 +59,16 @@ class CyberSecurityChatBot
         if (string.IsNullOrEmpty(chatbot.userProfile.Name))
         {
             Console.Write("\nEnter your name: ");
-            chatbot.userProfile.Name = Console.ReadLine().Trim();
-            if (string.IsNullOrEmpty(chatbot.userProfile.Name)) chatbot.userProfile.Name = "Guest"; // Default to "Guest"
+            string? input = Console.ReadLine();
+            chatbot.userProfile.Name = input?.Trim() ?? "Guest"; // Default to "Guest" if input is null or empty
         }
 
         // Ask for favorite security topic if not already stored
         if (string.IsNullOrEmpty(chatbot.userProfile.FavoriteTopic))
         {
             Console.Write("\nWhat is your favorite security topic? ");
-            chatbot.userProfile.FavoriteTopic = Console.ReadLine().Trim();
+            string? input = Console.ReadLine();
+            chatbot.userProfile.FavoriteTopic = input?.Trim() ?? string.Empty;
         }
 
         chatbot.SaveUserProfile("userProfile.json"); // Save user profile
@@ -72,7 +81,7 @@ class CyberSecurityChatBot
         {
             PrintHeader("Chat Session", ConsoleColor.DarkYellow); // Print session header
             Console.Write("\nAsk a question ('exit' to end): ");
-            string input = Console.ReadLine().Trim().ToLower(); // Get user input
+            string input = Console.ReadLine()?.Trim().ToLower() ?? string.Empty; // Get user input
 
             if (input == "exit") break; // Exit the loop if user types 'exit'
 
@@ -89,14 +98,16 @@ class CyberSecurityChatBot
 
             // Check for keywords after sentiment detection
             bool responseFound = false; // Flag to check if a response was found
-            foreach (var key in chatbot.keywordResponses.Keys)
+            foreach(var key in chatbot.keywordResponses.Keys)
             {
-                // Check if input contains any keyword or its variants
-                if (key.Split(',').Any(variant => input.Contains(variant.Trim())))
+                var variants = key.Split(',').Select(v => v.Trim().ToLower());
+                var inputWords = input.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                if (inputWords.Any(word => variants.Contains(word)))
                 {
-                    PrintResponse(key, input, chatbot.keywordResponses[key]); // Print the response
-                    responseFound = true; // Set flag to true
-                    break; // Exit the loop
+                    PrintResponse(key, input, chatbot.keywordResponses[key]);
+                    responseFound = true;
+                    break;
                 }
             }
 
@@ -114,7 +125,7 @@ class CyberSecurityChatBot
         if (File.Exists(jsonFilePath))
         {
             var jsonData = File.ReadAllText(jsonFilePath);
-            keywordResponses = JsonConvert.DeserializeObject<Dictionary<string, KeywordData>>(jsonData);
+            keywordResponses = JsonConvert.DeserializeObject<Dictionary<string, KeywordData>>(jsonData) ?? new Dictionary<string, KeywordData>();
         }
         else
         {
@@ -144,13 +155,24 @@ class CyberSecurityChatBot
         if (File.Exists(userProfilePath))
         {
             var jsonData = File.ReadAllText(userProfilePath);
-            userProfile = JsonConvert.DeserializeObject<UserProfile>(jsonData);
+            if (!string.IsNullOrWhiteSpace(jsonData))
+            {
+                userProfile = JsonConvert.DeserializeObject<UserProfile>(jsonData) ?? new UserProfile();
+            }
+            else
+            {
+                userProfile = new UserProfile();
+                SaveUserProfile(userProfilePath);
+            }
         }
         else
         {
-            userProfile = new UserProfile(); // Create a new profile if none exists
+            userProfile = new UserProfile();
+            SaveUserProfile(userProfilePath);
         }
     }
+
+
 
     // Save user profile to a JSON file
     private void SaveUserProfile(string userProfilePath)
@@ -187,7 +209,7 @@ class CyberSecurityChatBot
     // Detect sentiment in user input
     private bool DetectSentiment(string input, Dictionary<string, List<string>> sentimentResponses, out string response)
     {
-        response = null; // Initialize response
+        response = string.Empty; // Initialize response
         foreach (var sentiment in sentimentResponses.Keys)
         {
             if (input.Contains(sentiment)) // Check if input contains any sentiment keyword
@@ -309,13 +331,13 @@ class CyberSecurityChatBot
 // Class to hold keyword data and responses
 public class KeywordData
 {
-    public List<string> Responses { get; set; } // List of responses for the keyword
-    public List<string> FollowUps { get; set; } // List of follow-up questions for the keyword
+    public required List<string> Responses { get; set; } // List of responses for the keyword
+    public required List<string> FollowUps { get; set; } // List of follow-up questions for the keyword
 }
 
 // Class to hold user profile information
 public class UserProfile
 {
-    public string Name { get; set; } // User's name
-    public string FavoriteTopic { get; set; } // User's favorite security topic
+    public string? Name { get; set; } // User's name
+    public string? FavoriteTopic { get; set; } // User's favorite security topic
 }
